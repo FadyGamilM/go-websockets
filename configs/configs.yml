@@ -1,0 +1,6 @@
+postgresdb:
+  host: localhost:5445
+  user: "gows"
+  password: "gows"
+  dbname: "gowsdb"
+  sslmode: "disable"
