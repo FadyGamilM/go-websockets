@@ -8,3 +8,9 @@ postgresdb:
 
 server:
   port: "0.0.0.0:9090"
+
+
+paseto:
+  symmetrickey: "fady123456789gamil123456789mahro"
+  access_token_expiration: 15m
+  refresh_token_expiration: 24h
