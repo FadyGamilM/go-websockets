@@ -5,9 +5,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/FadyGamilM/go-websockets/configs"
+	"github.com/FadyGamilM/go-websockets/config"
 	paseto "github.com/FadyGamilM/go-websockets/internal/business/auth/paseto"
 	userService "github.com/FadyGamilM/go-websockets/internal/business/user"
+	"github.com/FadyGamilM/go-websockets/internal/business/ws"
 	"github.com/FadyGamilM/go-websockets/internal/database/postgres"
 	userRepo "github.com/FadyGamilM/go-websockets/internal/repository"
 	"github.com/FadyGamilM/go-websockets/internal/transport"
@@ -26,7 +27,7 @@ func main() {
 	userRepository := userRepo.New(db)
 
 	// instantiate the concrete impl of the infrastructure dependnecies (such as paseto token auth mechanism)
-	pasetoConfigs, err := configs.LoadPasetoTokenConfig("./configs")
+	pasetoConfigs, err := config.LoadPasetoTokenConfig("./config")
 	if err != nil {
 		fmt.Println("error trying to load config variables", err)
 		os.Exit(1)
@@ -47,6 +48,10 @@ func main() {
 	handlers.NewUserHandler(&handlers.UserHandlerConfig{
 		R:           router,
 		UserService: userService,
+	})
+	handlers.NewWsHandler(&handlers.WsHandlerConfig{
+		R: router,
+		Hub: ws.NewHub(),
 	})
 
 	server := transport.CreateServer(router)

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/FadyGamilM/go-websockets/configs"
+	"github.com/FadyGamilM/go-websockets/config"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +18,7 @@ type RestServer struct {
 }
 
 func CreateServer(r *gin.Engine) *RestServer {
-	configs, err := configs.LoadServerConfigs("./configs")
+	configs, err := config.LoadServerConfigs("./config")
 	if err != nil {
 		return nil
 	}

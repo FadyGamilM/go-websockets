@@ -74,14 +74,14 @@ func (uh *userHandler) HandleLogin(c *gin.Context) {
 }
 
 func (uh *userHandler) HandleSignup(c *gin.Context) {
-	dto := new(core.SignupUserDto)
-	if err := c.ShouldBindJSON(dto); err != nil {
+	var dto core.SignupUserDto
+	if err := c.ShouldBindJSON(&dto); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "bad request",
 		})
 	}
 
-	response, err := uh.userService.Signup(c, dto)
+	response, err := uh.userService.Signup(c, &dto)
 	if err != nil {
 
 		switch err.Type {

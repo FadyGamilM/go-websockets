@@ -5,3 +5,11 @@ type Room struct {
 	Name    string             `json:"name"`
 	Clients map[string]*Client `json:"clients"`
 }
+
+func NewRoom(roomID int64, roomName string) *Room {
+	return &Room{
+		ID:      roomID,
+		Name:    roomName,
+		Clients: make(map[string]*Client),
+	}
+}

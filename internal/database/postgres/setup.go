@@ -5,11 +5,11 @@ import (
 	"log"
 	"net/url"
 
-	"github.com/FadyGamilM/go-websockets/configs"
+	"github.com/FadyGamilM/go-websockets/config"
 )
 
 func SetupPostgresConnection() (*sql.DB, error) {
-	configs, err := configs.LoadPostgresConfig("./configs")
+	configs, err := config.LoadPostgresConfig("./config")
 	if err != nil {
 		log.Println("error trying to load config variables", err)
 		return nil, err

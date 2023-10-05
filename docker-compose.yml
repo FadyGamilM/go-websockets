@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:14
+    environment: 
+      POSTGRES_USER: gows
+      POSTGRES_PASSWORD: gows
+      POSTGRES_DB: gowsdb
+    ports:
+      - "5445:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:
+

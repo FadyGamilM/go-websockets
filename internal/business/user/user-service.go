@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 
-	"github.com/FadyGamilM/go-websockets/configs"
+	"github.com/FadyGamilM/go-websockets/config"
 	authService "github.com/FadyGamilM/go-websockets/internal/business/auth"
 	"github.com/FadyGamilM/go-websockets/internal/core"
 	"github.com/FadyGamilM/go-websockets/internal/models"
@@ -72,7 +72,7 @@ func (us *userService) Login(ctx context.Context, dto *core.LoginUserDto) (*core
 	}
 
 	// load the secret key from the config.yaml
-	pasetoConfigs, err := configs.LoadPasetoTokenConfig("./config")
+	pasetoConfigs, err := config.LoadPasetoTokenConfig("./config")
 	if err != nil {
 		businessErr := core.New_Business_InternalLogicError("")
 		return nil, businessErr
