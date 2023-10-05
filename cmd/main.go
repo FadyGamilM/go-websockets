@@ -8,11 +8,12 @@ import (
 	"github.com/FadyGamilM/go-websockets/config"
 	paseto "github.com/FadyGamilM/go-websockets/internal/business/auth/paseto"
 	userService "github.com/FadyGamilM/go-websockets/internal/business/user"
-	"github.com/FadyGamilM/go-websockets/internal/business/ws"
+	_ "github.com/FadyGamilM/go-websockets/internal/business/ws"
 	"github.com/FadyGamilM/go-websockets/internal/database/postgres"
 	userRepo "github.com/FadyGamilM/go-websockets/internal/repository"
 	"github.com/FadyGamilM/go-websockets/internal/transport"
 	"github.com/FadyGamilM/go-websockets/internal/transport/handlers"
+	ws "github.com/FadyGamilM/go-websockets/internal/transport/ws"
 )
 
 func main() {
@@ -49,10 +50,15 @@ func main() {
 		R:           router,
 		UserService: userService,
 	})
-	handlers.NewWsHandler(&handlers.WsHandlerConfig{
-		R: router,
-		Hub: ws.NewHub(),
-	})
+	// hub := ws.NewHub()
+	// // let the hub manages the room concurrently ..
+	// go hub.Run()
+	// handlers.NewWsHandler(&handlers.WsHandlerConfig{
+	// 	R:   router,
+	// 	Hub: hub,
+	// })
+
+	ws.NewManager(router)
 
 	server := transport.CreateServer(router)
 	server.Run()

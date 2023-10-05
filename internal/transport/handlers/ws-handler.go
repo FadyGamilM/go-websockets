@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/FadyGamilM/go-websockets/internal/business/ws"
@@ -26,6 +27,7 @@ func NewWsHandler(wshc *WsHandlerConfig) *wsHandler {
 
 	wsRoutes := wshc.R.Group("/api/ws")
 	wsRoutes.POST("/room", handler.HandleCreateRoom)
+	wsRoutes.GET("/:room_id", handler.HandleJoinRoom)
 
 	return &handler
 }
@@ -48,8 +50,8 @@ func (wsh *wsHandler) HandleCreateRoom(c *gin.Context) {
 }
 
 type JoinRoomReqDto struct {
-	RoomID   int64  `uri:"room_id" binding:"min=0, required"`
-	ClientID int64  `form:"client_id" binding:"min=0, required"`
+	RoomID   int64  `uri:"room_id" binding:"required,min=0"`
+	ClientID int64  `form:"client_id" binding:"required,min=0"`
 	Username string `form:"username" binding:"required"`
 }
 
@@ -78,8 +80,10 @@ func (wsh *wsHandler) HandleJoinRoom(c *gin.Context) {
 			},
 		)
 	}
+
+	log.Printf("The ROOM ID : %v \n", dto.RoomID)
 	// create a client
-	client := ws.Client{
+	client := &ws.Client{
 		ClientID:   dto.ClientID,
 		Username:   dto.Username,
 		RoomID:     dto.RoomID,
@@ -87,12 +91,20 @@ func (wsh *wsHandler) HandleJoinRoom(c *gin.Context) {
 		Message:    make(chan *ws.Message, 10),
 	}
 
-	messageToBeBroadcasted := &ws.Message{
+	welcomingMsg := &ws.Message{
 		Content:  "a new user has joined the room, say hi to " + client.Username,
 		Username: client.Username,
 		RoomID:   client.RoomID,
 	}
 
 	// register the client to the register-channel
+	wsh.hub.Register <- client
+
 	// broadcast the message
+	wsh.hub.Broadcast <- welcomingMsg
+
+	go client.WriteMessage()
+
+	go client.ReadMessage(wsh.hub)
+
 }
