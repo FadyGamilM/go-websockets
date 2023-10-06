@@ -6,3 +6,5 @@
 
 
 The websocket connection of gorillamux actually allows one concurrent writer at a time 
+
+browser actually responds to the ping messages by default, all we need to do is to handle the server-side code 

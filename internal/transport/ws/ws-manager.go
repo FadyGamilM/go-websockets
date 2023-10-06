@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"sync"
@@ -9,23 +10,47 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// if we have db repos we will have it here ..
 type Manager struct {
 	Clients map[*Client]bool
-	//
+	// to lock the Clients map from deadlock
 	sync.RWMutex
+	handlers map[string]EventHandler
 }
 
+// factory method
 func NewManager(r *gin.Engine) *Manager {
 	wsRoutes := r.Group("/api/ws")
 	m := &Manager{
-		Clients: make(map[*Client]bool),
+		Clients:  make(map[*Client]bool),
+		handlers: make(map[string]EventHandler),
 	}
 	wsRoutes.GET("/", m.ServerWebSockets)
 	wsRoutes.POST("/", m.ServerWebSockets)
 	wsRoutes.GET("/clients", m.HandleGetClients)
+	// setup the event handlers
+	m.setupEventHandlers()
 	return m
 }
 
+// setup each handler to its appropriate event type
+func (m *Manager) setupEventHandlers() {
+	// setup the event handler for send-msg event
+	m.handlers[Event_SendMessage] = SendMessageEventHandler
+}
+
+func (m *Manager) RouteEventsToHandlers(e Event, c *Client) error {
+	// if this type of events is supported , handle it
+	handler, ok := m.handlers[e.Type]
+	if ok {
+		return handler(e, c)
+	} else {
+		// if not , return an error unsupported events
+		return errors.New("unsupported event type")
+	}
+}
+
+// endpoint of getting all the clients managed by the manager (All the connected clients)
 func (m *Manager) HandleGetClients(c *gin.Context) {
 	if len(m.Clients) == 0 {
 		c.JSON(http.StatusOK, gin.H{
@@ -38,8 +63,13 @@ func (m *Manager) HandleGetClients(c *gin.Context) {
 	}
 }
 
+/*
+@ Logic
+  - upgrade the connection protocol to 101
+  - add a client for the current ws request
+  - run a read and write messages for this client on a concurrent go-routine
+*/
 func (m *Manager) ServerWebSockets(c *gin.Context) {
-
 	// upgrade the connection protocol
 	// upgrade the request to websocket protocol
 	upgrader := websocket.Upgrader{
@@ -62,6 +92,7 @@ func (m *Manager) ServerWebSockets(c *gin.Context) {
 	m.AddClient(client)
 
 	go client.ReadMessages()
+	go client.WriteMessages()
 }
 
 func (m *Manager) AddClient(c *Client) {
